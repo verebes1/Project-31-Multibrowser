@@ -32,6 +32,11 @@ class ViewController: UIViewController, WKNavigationDelegate, UITextFieldDelegat
         title = "Multibrowser"
     }
     
+    private func updateUI(for webView: WKWebView) {
+        title = webView.title
+        addressBar.text = webView.url?.absoluteString ?? ""
+    }
+    
     @objc private func addWebView() {
         let webView = WKWebView()
         webView.navigationDelegate = self
@@ -86,12 +91,15 @@ class ViewController: UIViewController, WKNavigationDelegate, UITextFieldDelegat
         }
         activeWebView = webView
         webView.layer.borderWidth = 3
+        
+        updateUI(for: webView)
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         print("EDIT MODE ON")
-        if let webView = activeWebView, let address = addressBar.text {
+        if let webView = activeWebView, var address = addressBar.text {
             print("WE ARE TRYING TO GET AN URL")
+            address = address.hasPrefix("http") ? address : "http://\(address)"
             if let url = URL(string: address) {
                 print("WE ARE LOADING")
                 webView.load(URLRequest(url: url))
@@ -116,6 +124,12 @@ class ViewController: UIViewController, WKNavigationDelegate, UITextFieldDelegat
             stackView.axis = .vertical
         } else {
             stackView.axis = .horizontal
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if webView == activeWebView {
+            updateUI(for: webView)
         }
     }
     
