@@ -51,7 +51,33 @@ class ViewController: UIViewController, WKNavigationDelegate, UITextFieldDelegat
     }
     
     @objc private func deleteWebView() {
-        
+        //safe unwrapping of our webView
+        if let webView = activeWebView {
+            if let index = stackView.arrangedSubviews.index(of: webView) {
+                // we found the current webView in the stackView and we remove it
+                stackView.removeArrangedSubview(webView)
+                // now remove it from the view hierarchy - this is important!
+                webView.removeFromSuperview()
+                
+                if stackView.arrangedSubviews.count == 0 {
+                    // set our default UI
+                    setDefaultTitle()
+                } else {
+                    // convert the Index value to an integer
+                    var currenIndex = Int(index)
+                    
+                    // if that was the last webView in the stack go back by one
+                    if currenIndex == stackView.arrangedSubviews.count {
+                        currenIndex = stackView.arrangedSubviews.count - 1
+                    }
+                    
+                    // find the webView at the new index and select it
+                    if let newSelectedWebView = stackView.arrangedSubviews[currenIndex] as? WKWebView {
+                        selectWebView(newSelectedWebView)
+                    }
+                }
+            }
+        }
     }
     
     private func selectWebView(_ webView: WKWebView) {
@@ -83,6 +109,14 @@ class ViewController: UIViewController, WKNavigationDelegate, UITextFieldDelegat
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        if traitCollection.horizontalSizeClass == .compact {
+            stackView.axis = .vertical
+        } else {
+            stackView.axis = .horizontal
+        }
     }
     
 }
